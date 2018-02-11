@@ -1,0 +1,5 @@
+ipython
+sphinx
+sphinx_rtd_theme
+python-coveralls
+twine
