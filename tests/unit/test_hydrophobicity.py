@@ -54,7 +54,7 @@ class SolvationTests(TestCase):
         self.mock_atsolv.assert_any_call(self.atoms[1])
         self.mock_atsolv.assert_any_call(self.atoms[2])
         self.model.remove_atom.assert_called_with(self.dummy)
-        self.assertEqual(solv, 6)
+        self.assertEqual(solv, 2)
 
 
     def test_dummy_atom_is_always_removed(self):
@@ -68,7 +68,11 @@ class SolvationTests(TestCase):
 class AtomSolvationTests(TestCase):
 
     def setUp(self):
-        self.atom = Mock()
+        self.atom, self.residue = Mock(), Mock()
+        self.atom.charge.return_value = 0
+        self.atom.name.return_value = None
+        self.atom.residue.return_value = self.residue
+        self.residue.name.return_value = "MET"
 
 
     def test_default_solvation_is_zero(self):
@@ -87,4 +91,77 @@ class AtomSolvationTests(TestCase):
 
     def test_nitrogen_solvation(self):
         self.atom.element.return_value = "N"
+        self.assertEqual(atom_solvation(self.atom), -9)
+
+
+    def test_charged_oxygen_solvation(self):
+        self.atom.element.return_value = "O"
+        self.atom.charge.return_value = -2
+        self.assertEqual(atom_solvation(self.atom), -37)
+
+
+    def test_charged_nitrogen_solvation(self):
+        self.atom.element.return_value = "N"
+        self.atom.charge.return_value = 1
+        self.assertEqual(atom_solvation(self.atom), -38)
+
+
+    def test_sulphur_solvation(self):
+        self.atom.element.return_value = "S"
+        self.assertEqual(atom_solvation(self.atom), -5)
+
+
+    def test_glutamate_oxygens(self):
+        self.residue.name.return_value = "GLU"
+        self.atom.element.return_value = "O"
+        self.assertEqual(atom_solvation(self.atom), -9)
+        self.atom.name.return_value = "OE1"
+        self.assertEqual(atom_solvation(self.atom), -23)
+        self.atom.name.return_value = "OE2"
+        self.assertEqual(atom_solvation(self.atom), -23)
+        self.atom.name.return_value = "OE3"
+        self.assertEqual(atom_solvation(self.atom), -9)
+        self.atom.residue.return_value = None
+        self.assertEqual(atom_solvation(self.atom), -9)
+
+
+    def test_aspartate_oxygens(self):
+        self.residue.name.return_value = "ASP"
+        self.atom.element.return_value = "O"
+        self.assertEqual(atom_solvation(self.atom), -9)
+        self.atom.name.return_value = "OD1"
+        self.assertEqual(atom_solvation(self.atom), -23)
+        self.atom.name.return_value = "OD2"
+        self.assertEqual(atom_solvation(self.atom), -23)
+        self.atom.name.return_value = "OD3"
+        self.assertEqual(atom_solvation(self.atom), -9)
+        self.atom.residue.return_value = None
+        self.assertEqual(atom_solvation(self.atom), -9)
+
+
+    def test_histidine_nitrogens(self):
+        self.residue.name.return_value = "HIS"
+        self.atom.element.return_value = "N"
+        self.assertEqual(atom_solvation(self.atom), -9)
+        self.atom.name.return_value = "ND1"
+        self.assertEqual(atom_solvation(self.atom), -23)
+        self.atom.name.return_value = "NE2"
+        self.assertEqual(atom_solvation(self.atom), -23)
+        self.atom.name.return_value = "NF3"
+        self.assertEqual(atom_solvation(self.atom), -9)
+        self.atom.residue.return_value = None
+        self.assertEqual(atom_solvation(self.atom), -9)
+
+
+    def test_arginine_nitrogens(self):
+        self.residue.name.return_value = "ARG"
+        self.atom.element.return_value = "N"
+        self.assertEqual(atom_solvation(self.atom), -9)
+        self.atom.name.return_value = "NH1"
+        self.assertEqual(atom_solvation(self.atom), -23)
+        self.atom.name.return_value = "NH2"
+        self.assertEqual(atom_solvation(self.atom), -23)
+        self.atom.name.return_value = "NH3"
+        self.assertEqual(atom_solvation(self.atom), -9)
+        self.atom.residue.return_value = None
         self.assertEqual(atom_solvation(self.atom), -9)

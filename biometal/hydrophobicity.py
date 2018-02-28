@@ -30,17 +30,27 @@ def solvation(model, x, y, z, radius):
         solvations = [atom_solvation(atom) for atom in sphere]
     finally:
         model.remove_atom(dummy)
-    return sum(solvations)
-    
+    return sum(solvations) / len(sphere)
+
 
 def atom_solvation(atom):
-    """Returns the atomic solvation parameter of an atomium atom.
+    """Returns the atomic solvation parameter of an atomium atom. The atomic
+    solvation parameters are taken from Yamashita et al (1990).
 
     :param Atom atom: an atomium atom object.
     :rtype: ``float``"""
 
-    if atom.element() == "C":
-        return 18
-    if atom.element() == "O" or atom.element() == "N":
+    specials = {
+     "O": {"GLU": ["OE1", "OE2"], "ASP": ["OD1", "OD2"]},
+     "N": {"HIS": ["ND1", "NE2"], "ARG": ["NH1", "NH2"]}
+    }
+    if atom.element() == "C": return 18
+    if atom.element() == "S": return -5
+    if atom.element() in specials:
+        if atom.charge() != 0:
+            return -37 if atom.element() == "O" else -38
+        if atom.residue() and atom.residue().name() in specials[atom.element()]:
+            if atom.name() in specials[atom.element()][atom.residue().name()]:
+                return -23
         return -9
     return 0
