@@ -25,10 +25,13 @@ def solvation(model, x, y, z, radius):
         raise ValueError("{} is not a valid radius".format(radius))
     dummy = Atom("X", x, y, z)
     model.add_atom(dummy)
-    sphere = dummy.nearby(radius)
-    solvations = [atom_solvation(atom) for atom in sphere]
+    try:
+        sphere = dummy.nearby(radius)
+        solvations = [atom_solvation(atom) for atom in sphere]
+    finally:
+        model.remove_atom(dummy)
     return sum(solvations)
-
+    
 
 def atom_solvation(atom):
     """Returns the atomic solvation parameter of an atomium atom.

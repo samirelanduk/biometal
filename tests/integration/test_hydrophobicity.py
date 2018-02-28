@@ -20,5 +20,7 @@ class Tests(TestCase):
 
 
     def test_solvation_measures(self):
+        atoms_at_start = len(self.model.atoms())
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 0.1), 0)
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 1), 45)
+        self.assertEqual(len(self.model.atoms()), atoms_at_start)

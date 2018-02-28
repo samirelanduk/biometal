@@ -9,6 +9,18 @@ class SolvationTests(TestCase):
         self.model = Mock(Model)
         self.atoms = [Mock(), Mock(), Mock(), Mock(), Mock()]
         self.model.atoms.return_value = self.atoms
+        self.patch1 = patch("biometal.hydrophobicity.Atom")
+        self.patch2 = patch("biometal.hydrophobicity.atom_solvation")
+        self.mock_atom = self.patch1.start()
+        self.mock_atsolv = self.patch2.start()
+        self.dummy = Mock()
+        self.dummy.nearby.return_value = self.atoms[:3]
+        self.mock_atom.return_value = self.dummy
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()
 
 
     def test_solvation_needs_model(self):
@@ -32,21 +44,24 @@ class SolvationTests(TestCase):
             solvation(self.model, 0, 0, 0, -10)
 
 
-    @patch("biometal.hydrophobicity.Atom")
-    @patch("biometal.hydrophobicity.atom_solvation")
-    def test_can_get_solvation(self, mock_atsolv, mock_atom):
-        mock_atsolv.side_effect = [11, -9, 4]
-        dummy = Mock()
-        dummy.nearby.return_value = self.atoms[:3]
-        mock_atom.return_value = dummy
+    def test_can_get_solvation(self):
+        self.mock_atsolv.side_effect = [11, -9, 4]
         solv = solvation(self.model, 2, 4, 5, 12)
-        mock_atom.assert_called_with("X", 2, 4, 5)
-        self.model.add_atom.assert_called_with(dummy)
-        dummy.nearby.assert_called_with(12)
-        mock_atsolv.assert_any_call(self.atoms[0])
-        mock_atsolv.assert_any_call(self.atoms[1])
-        mock_atsolv.assert_any_call(self.atoms[2])
+        self.mock_atom.assert_called_with("X", 2, 4, 5)
+        self.model.add_atom.assert_called_with(self.dummy)
+        self.dummy.nearby.assert_called_with(12)
+        self.mock_atsolv.assert_any_call(self.atoms[0])
+        self.mock_atsolv.assert_any_call(self.atoms[1])
+        self.mock_atsolv.assert_any_call(self.atoms[2])
+        self.model.remove_atom.assert_called_with(self.dummy)
         self.assertEqual(solv, 6)
+
+
+    def test_dummy_atom_is_always_removed(self):
+        self.dummy.nearby.side_effect = Exception
+        with self.assertRaises(Exception):
+            solvation(self.model, 2, 4, 5, 12)
+        self.model.remove_atom.assert_called_with(self.dummy)
 
 
 
