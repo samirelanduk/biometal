@@ -11,17 +11,17 @@ class Tests(TestCase):
         mol = Molecule(atom1)
         self.model.add_molecule(mol)
 
-        atom2 = Atom("C", 0.5, 0, 0, name="CA")
+        atom2 = Atom("C", 0.5, 0, 0, name="C")
         atom3 = Atom("S", 0, 0.5, 0, name="S1")
-        atom4 = Atom("N", 0, 0, 0.5, name="N1")
-        atom5 = Atom("O", 0.5, 0, 0.5, name="O1")
+        atom4 = Atom("N", 0, 0, 0.5, name="N")
+        atom5 = Atom("O", 0.5, 0, 0.5, name="O")
         res1 = Residue(atom2, atom3, atom4, atom5, name="VAL")
         self.model.add_residue(res1)
 
         atom6 = Atom("C", 2.5, 0, 0, name="CA")
         atom7 = Atom("O", 0, 2.5, 0, name="O1", charge=-2)
         atom8 = Atom("N", 0, 0, 2.5, name="N1", charge=1)
-        atom9 = Atom("O", 2, 0, 2, name="O2")
+        atom9 = Atom("O", 2, 0, 2, name="O")
         res2 = Residue(atom6, atom7, atom8, atom9, name="TRP")
         self.model.add_residue(res2)
 
@@ -32,7 +32,7 @@ class Tests(TestCase):
         res3 = Residue(atom10, atom11, atom12, atom13, name="GLU")
         self.model.add_residue(res3)
 
-        atom14 = Atom("C", 8.5, 0, 0, name="CA")
+        atom14 = Atom("C", 8.5, 0, 0, name="CP")
         atom15 = Atom("N", 0, 8.5, 0, name="ND1")
         atom16 = Atom("N", 0, 0, 8.5, name="NE2")
         atom17 = Atom("N", 6, 0, 6, name="N2")
@@ -52,4 +52,39 @@ class Tests(TestCase):
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 7), -108/13)
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 8), -108/13)
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 9), -145/17)
+        self.assertEqual(len(self.model.atoms()), atoms_at_start)
+
+
+    def test_partial_charges_measures(self):
+        atoms_at_start = len(self.model.atoms())
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 0.1, pc=True
+        ), 0, delta=0.005)
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 1, pc=True
+        ), 0.797076/5, delta=0.005)
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 2, pc=True
+        ), 0.797076/5, delta=0.005)
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 3, pc=True
+        ), 6.10858/9, delta=0.005)
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 4, pc=True
+        ), 6.10858/9, delta=0.005)
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 5, pc=True
+        ), 7.165968/13, delta=0.005)
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 6, pc=True
+        ), 7.165968/13, delta=0.005)
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 7, pc=True
+        ), 7.165968/13, delta=0.005)
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 8, pc=True
+        ), 7.165968/13, delta=0.005)
+        self.assertAlmostEqual(biometal.solvation(
+         self.model, 0, 0, 0, 9, pc=True
+        ), 7.688794/17, delta=0.005)
         self.assertEqual(len(self.model.atoms()), atoms_at_start)

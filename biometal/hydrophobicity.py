@@ -1,6 +1,7 @@
 from atomium.structures import Model, Atom
+from .charges import partial_charges
 
-def solvation(model, x, y, z, radius):
+def solvation(model, x, y, z, radius, pc=False):
     """Determines the average solvation within a given sphere of an atomium
     model.
 
@@ -9,6 +10,8 @@ def solvation(model, x, y, z, radius):
     :param y: The y-coordinate of the centre of the sphere.
     :param z: The z-coordinate of the centre of the sphere.
     :param radius: The radius of the sphere.
+    :param bool pc: If ``True``, atomic partial charges will be used instead of\
+    atomic solvation parameters (squared).
     :raises TypeError: if the model is not an atomium model object.
     :raises TypeError: if the coordinates are not numeric.
     :raises TypeError: if the radius is not numeric.
@@ -27,7 +30,8 @@ def solvation(model, x, y, z, radius):
     model.add_atom(dummy)
     try:
         sphere = dummy.nearby(radius)
-        solvations = [atom_solvation(atom) for atom in sphere]
+        solvations = ([atom_partial_charge(atom) ** 2 for atom in sphere]
+         if pc else [atom_solvation(atom) for atom in sphere])
     finally:
         model.remove_atom(dummy)
     return sum(solvations) / len(sphere)
@@ -53,4 +57,17 @@ def atom_solvation(atom):
             if atom.name() in specials[atom.element()][atom.residue().name()]:
                 return -23
         return -9
+    return 0
+
+
+def atom_partial_charge(atom):
+    """Returns the atomic partial charge of an atomium atom.
+
+    :param Atom atom: an atomium atom object.
+    :rtype: ``float``"""
+
+    if atom.charge() != 0: return atom.charge()
+    if atom.residue() is not None and atom.residue().name() in partial_charges:
+        if atom.name() in partial_charges[atom.residue().name()]:
+            return partial_charges[atom.residue().name()][atom.name()]
     return 0
