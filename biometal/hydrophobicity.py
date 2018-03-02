@@ -1,7 +1,7 @@
 from atomium.structures import Model, Atom
 from .charges import partial_charges
 
-def solvation(model, x, y, z, radius, pc=False, exclude_het=False):
+def solvation(model, x, y, z, radius, pc=False, het=True):
     """Determines the average solvation within a given sphere of an atomium
     model. By default, all atoms within the radius will be considered, but you
     can opt to exlcude heteroatoms (atoms not part of a chain residue) if you so
@@ -14,7 +14,7 @@ def solvation(model, x, y, z, radius, pc=False, exclude_het=False):
     :param radius: The radius of the sphere.
     :param bool pc: If ``True``, atomic partial charges will be used instead of\
     atomic solvation parameters (squared).
-    :param bool exclude_het: If ``True``, only atoms that have a residue will be
+    :param bool het: If ``False``, only atoms that have a residue will be
     considered.
     :raises TypeError: if the model is not an atomium model object.
     :raises TypeError: if the coordinates are not numeric.
@@ -30,16 +30,10 @@ def solvation(model, x, y, z, radius, pc=False, exclude_het=False):
         raise TypeError("{} is not a valid radius".format(radius))
     if radius < 0:
         raise ValueError("{} is not a valid radius".format(radius))
-    dummy = Atom("X", x, y, z)
-    model.add_atom(dummy)
-    try:
-        sphere = dummy.nearby(radius)
-        if exclude_het:
-            sphere = set(filter(lambda a: a.residue() is not None, sphere))
-        solvations = ([atom_partial_charge(atom) ** 2 for atom in sphere]
-         if pc else [atom_solvation(atom) for atom in sphere])
-    finally:
-        model.remove_atom(dummy)
+
+    sphere = model.atoms_in_sphere(x, y, z, radius, het=het)
+    solvations = ([atom_partial_charge(atom) ** 2 for atom in sphere]
+     if pc else [atom_solvation(atom) for atom in sphere])
     return sum(solvations) / len(sphere) if len(solvations) else 0
 
 

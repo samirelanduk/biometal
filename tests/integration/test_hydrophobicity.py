@@ -2,7 +2,7 @@ from unittest import TestCase
 from atomium.structures import Model, Atom, Residue, Molecule
 import biometal
 
-class Tests(TestCase):
+class SolvationTests(TestCase):
 
     def setUp(self):
         self.model = Model()
@@ -53,7 +53,7 @@ class Tests(TestCase):
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 8), -108/13)
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 9), -146/17)
         self.assertEqual(
-         biometal.solvation(self.model, 0, 0, 0, 9, exclude_het=True), -146/16
+         biometal.solvation(self.model, 0, 0, 0, 9, het=False), -146/16
         )
         self.assertEqual(len(self.model.atoms()), atoms_at_start)
 

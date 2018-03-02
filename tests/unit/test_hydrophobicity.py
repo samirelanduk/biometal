@@ -8,24 +8,16 @@ class SolvationTests(TestCase):
     def setUp(self):
         self.model = Mock(Model)
         self.atoms = [Mock(), Mock(), Mock(), Mock(), Mock()]
-        for atom in self.atoms:
-            atom.residue.return_value = None if atom is self.atoms[2] else "RES"
-        self.model.atoms.return_value = self.atoms
-        self.patch1 = patch("biometal.hydrophobicity.Atom")
-        self.patch2 = patch("biometal.hydrophobicity.atom_solvation")
-        self.patch3 = patch("biometal.hydrophobicity.atom_partial_charge")
-        self.mock_atom = self.patch1.start()
-        self.mock_atsolv = self.patch2.start()
-        self.mock_atcharge = self.patch3.start()
-        self.dummy = Mock()
-        self.dummy.nearby.return_value = self.atoms[:3]
-        self.mock_atom.return_value = self.dummy
+        self.model.atoms_in_sphere.return_value = self.atoms[:3]
+        self.patch1 = patch("biometal.hydrophobicity.atom_solvation")
+        self.patch2 = patch("biometal.hydrophobicity.atom_partial_charge")
+        self.mock_atsolv = self.patch1.start()
+        self.mock_atcharge = self.patch2.start()
 
 
     def tearDown(self):
         self.patch1.stop()
         self.patch2.stop()
-        self.patch3.stop()
 
 
     def test_solvation_needs_model(self):
@@ -52,55 +44,33 @@ class SolvationTests(TestCase):
     def test_can_get_solvation(self):
         self.mock_atsolv.side_effect = [11, -9, 4]
         solv = solvation(self.model, 2, 4, 5, 12)
-        self.mock_atom.assert_called_with("X", 2, 4, 5)
-        self.model.add_atom.assert_called_with(self.dummy)
-        self.dummy.nearby.assert_called_with(12)
+        self.model.atoms_in_sphere.assert_called_with(2, 4, 5, 12, het=True)
         self.mock_atsolv.assert_any_call(self.atoms[0])
         self.mock_atsolv.assert_any_call(self.atoms[1])
         self.mock_atsolv.assert_any_call(self.atoms[2])
         self.assertFalse(self.mock_atcharge.called)
-        self.model.remove_atom.assert_called_with(self.dummy)
         self.assertEqual(solv, 2)
 
 
     def test_can_get_partial_charges(self):
         self.mock_atcharge.side_effect = [11, -8, 5]
         solv = solvation(self.model, 2, 4, 5, 12, pc=True)
-        self.mock_atom.assert_called_with("X", 2, 4, 5)
-        self.model.add_atom.assert_called_with(self.dummy)
-        self.dummy.nearby.assert_called_with(12)
+        self.model.atoms_in_sphere.assert_called_with(2, 4, 5, 12, het=True)
         self.mock_atcharge.assert_any_call(self.atoms[0])
         self.mock_atcharge.assert_any_call(self.atoms[1])
         self.mock_atcharge.assert_any_call(self.atoms[2])
         self.assertFalse(self.mock_atsolv.called)
-        self.model.remove_atom.assert_called_with(self.dummy)
         self.assertEqual(solv, 70)
 
 
-    def test_dummy_atom_is_always_removed(self):
-        self.dummy.nearby.side_effect = Exception
-        with self.assertRaises(Exception):
-            solvation(self.model, 2, 4, 5, 12)
-        self.model.remove_atom.assert_called_with(self.dummy)
-
-
     def test_can_handle_zero_atoms(self):
-        self.dummy.nearby.return_value = []
+        self.model.atoms_in_sphere.return_value = []
         self.assertEqual(solvation(self.model, 2, 4, 5, 12), 0)
 
 
     def test_can_filter_out_heteroatoms(self):
-        self.mock_atsolv.side_effect = [11, -9, 4]
-        solv = solvation(self.model, 2, 4, 5, 12, exclude_het=True)
-        self.mock_atom.assert_called_with("X", 2, 4, 5)
-        self.model.add_atom.assert_called_with(self.dummy)
-        self.dummy.nearby.assert_called_with(12)
-        self.mock_atsolv.assert_any_call(self.atoms[0])
-        self.mock_atsolv.assert_any_call(self.atoms[1])
-        self.assertEqual(self.mock_atsolv.call_count, 2)
-        self.assertFalse(self.mock_atcharge.called)
-        self.model.remove_atom.assert_called_with(self.dummy)
-        self.assertEqual(solv, 1)
+        solvation(self.model, 2, 4, 5, 12, het=False)
+        self.model.atoms_in_sphere.assert_called_with(2, 4, 5, 12, het=False)
 
 
 
