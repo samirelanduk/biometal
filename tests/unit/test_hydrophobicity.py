@@ -8,6 +8,8 @@ class SolvationTests(TestCase):
     def setUp(self):
         self.model = Mock(Model)
         self.atoms = [Mock(), Mock(), Mock(), Mock(), Mock()]
+        for atom in self.atoms:
+            atom.residue.return_value = None if atom is self.atoms[2] else "RES"
         self.model.atoms.return_value = self.atoms
         self.patch1 = patch("biometal.hydrophobicity.Atom")
         self.patch2 = patch("biometal.hydrophobicity.atom_solvation")
@@ -85,6 +87,20 @@ class SolvationTests(TestCase):
     def test_can_handle_zero_atoms(self):
         self.dummy.nearby.return_value = []
         self.assertEqual(solvation(self.model, 2, 4, 5, 12), 0)
+
+
+    def test_can_filter_out_heteroatoms(self):
+        self.mock_atsolv.side_effect = [11, -9, 4]
+        solv = solvation(self.model, 2, 4, 5, 12, exclude_het=True)
+        self.mock_atom.assert_called_with("X", 2, 4, 5)
+        self.model.add_atom.assert_called_with(self.dummy)
+        self.dummy.nearby.assert_called_with(12)
+        self.mock_atsolv.assert_any_call(self.atoms[0])
+        self.mock_atsolv.assert_any_call(self.atoms[1])
+        self.assertEqual(self.mock_atsolv.call_count, 2)
+        self.assertFalse(self.mock_atcharge.called)
+        self.model.remove_atom.assert_called_with(self.dummy)
+        self.assertEqual(solv, 1)
 
 
 
