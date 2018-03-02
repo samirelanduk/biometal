@@ -34,7 +34,7 @@ def solvation(model, x, y, z, radius, pc=False):
          if pc else [atom_solvation(atom) for atom in sphere])
     finally:
         model.remove_atom(dummy)
-    return sum(solvations) / len(sphere)
+    return sum(solvations) / len(sphere) if len(solvations) else 0
 
 
 def atom_solvation(atom):

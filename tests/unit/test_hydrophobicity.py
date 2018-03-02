@@ -82,6 +82,11 @@ class SolvationTests(TestCase):
         self.model.remove_atom.assert_called_with(self.dummy)
 
 
+    def test_can_handle_zero_atoms(self):
+        self.dummy.nearby.return_value = []
+        self.assertEqual(solvation(self.model, 2, 4, 5, 12), 0)
+
+
 
 class AtomSolvationTests(TestCase):
 
