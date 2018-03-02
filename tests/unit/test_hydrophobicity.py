@@ -167,9 +167,9 @@ class AtomSolvationTests(TestCase):
         self.atom.element.return_value = "N"
         self.assertEqual(atom_solvation(self.atom), -9)
         self.atom.name.return_value = "ND1"
-        self.assertEqual(atom_solvation(self.atom), -23)
+        self.assertEqual(atom_solvation(self.atom), -23.5)
         self.atom.name.return_value = "NE2"
-        self.assertEqual(atom_solvation(self.atom), -23)
+        self.assertEqual(atom_solvation(self.atom), -23.5)
         self.atom.name.return_value = "NF3"
         self.assertEqual(atom_solvation(self.atom), -9)
         self.atom.residue.return_value = None
@@ -181,9 +181,9 @@ class AtomSolvationTests(TestCase):
         self.atom.element.return_value = "N"
         self.assertEqual(atom_solvation(self.atom), -9)
         self.atom.name.return_value = "NH1"
-        self.assertEqual(atom_solvation(self.atom), -23)
+        self.assertEqual(atom_solvation(self.atom), -23.5)
         self.atom.name.return_value = "NH2"
-        self.assertEqual(atom_solvation(self.atom), -23)
+        self.assertEqual(atom_solvation(self.atom), -23.5)
         self.atom.name.return_value = "NH3"
         self.assertEqual(atom_solvation(self.atom), -9)
         self.atom.residue.return_value = None

@@ -55,7 +55,7 @@ def atom_solvation(atom):
             return -37 if atom.element() == "O" else -38
         if atom.residue() and atom.residue().name() in specials[atom.element()]:
             if atom.name() in specials[atom.element()][atom.residue().name()]:
-                return -23
+                return -23 if atom.element() == "O" else -23.5
         return -9
     return 0
 

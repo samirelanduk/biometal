@@ -51,7 +51,7 @@ class Tests(TestCase):
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 6), -108/13)
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 7), -108/13)
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 8), -108/13)
-        self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 9), -145/17)
+        self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 9), -146/17)
         self.assertEqual(len(self.model.atoms()), atoms_at_start)
 
 
