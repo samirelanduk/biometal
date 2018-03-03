@@ -71,3 +71,45 @@ def atom_partial_charge(atom):
         if atom.name() in partial_charges[atom.residue().name()]:
             return partial_charges[atom.residue().name()][atom.name()]
     return 0
+
+
+def hydrophobic_contrast(model, x, y, z, radius, het=True):
+    """Determines the hydrophobic contrast within a sphere - a measure of
+    how heterogenous the hydrophobicity is within the sphere.
+
+    A homogeneous sphere will evaluate to zero, a sphere with a region of high
+    hydrophilic atoms enclosed within a region of high hydrophobic regions will
+    have a high positive value, and the converse will have a high negative
+    value.
+
+    :param Model model: The atomium model to examine.
+    :param x: The x-coordinate of the centre of the sphere.
+    :param y: The y-coordinate of the centre of the sphere.
+    :param z: The z-coordinate of the centre of the sphere.
+    :param radius: The radius of the sphere.
+    :param bool het: If ``False``, only atoms that have a residue will be
+    considered.
+    :raises TypeError: if the model is not an atomium model object.
+    :raises TypeError: if the coordinates are not numeric.
+    :raises TypeError: if the radius is not numeric.
+    :raises ValueError: if the radius is negative.
+    :rtype: ``float``"""
+
+    if not isinstance(model, Model):
+        raise TypeError("{} is not a Model".format(model))
+    if any(not isinstance(c, (int, float)) for c in (x, y, z)):
+        raise TypeError("({}, {}, {}) not valid coordinate".format(x, y, z))
+    if not isinstance(radius, (int, float)):
+        raise TypeError("{} is not a valid radius".format(radius))
+    if radius < 0:
+        raise ValueError("{} is not a valid radius".format(radius))
+    sphere = model.atoms_in_sphere(x, y, z, radius, het=het)
+    if len(sphere) == 0: return 0
+    average_solvation = solvation(model, x, y, z, radius, het=het)
+    sum_, r2 = 0, 0
+    for atom in sphere:
+        distance = atom.distance_to((x, y, z))
+        sum_ += atom_solvation(atom) * (distance ** 2)
+        r2 += (distance ** 2)
+    r2 /= len(sphere)
+    return sum_ - (len(sphere) * average_solvation * r2)

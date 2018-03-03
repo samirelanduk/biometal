@@ -229,3 +229,70 @@ class AtomicPartialChargesTests(TestCase):
         self.assertEqual(atom_partial_charge(self.atom), 0)
         self.atom.residue.return_value = None
         self.assertEqual(atom_partial_charge(self.atom), 0)
+
+
+
+class HydrophobicContrastTests(TestCase):
+
+    def setUp(self):
+        self.model = Mock(Model)
+        self.atoms = [Mock(), Mock(), Mock(), Mock(), Mock()]
+        self.atoms[0].distance_to.return_value = 7
+        self.atoms[1].distance_to.return_value = 5
+        self.atoms[2].distance_to.return_value = 10
+        self.model.atoms_in_sphere.return_value = self.atoms[:3]
+        self.patch1 = patch("biometal.hydrophobicity.solvation")
+        self.patch2 = patch("biometal.hydrophobicity.atom_solvation")
+        self.mock_solv = self.patch1.start()
+        self.mock_atsolv = self.patch2.start()
+        self.mock_solv.return_value = 8
+
+
+    def tearDown(self):
+        self.patch1.stop()
+        self.patch2.stop()
+
+
+    def test_contrast_needs_model(self):
+        with self.assertRaises(TypeError):
+            hydrophobic_contrast("structure", 0, 0, 0, 10)
+
+
+    def test_coordinates_must_be_numbers(self):
+        with self.assertRaises(TypeError):
+            hydrophobic_contrast(self.model, "0", 0, 0, 10)
+        with self.assertRaises(TypeError):
+            hydrophobic_contrast(self.model, 0, "0", 0, 10)
+        with self.assertRaises(TypeError):
+            hydrophobic_contrast(self.model, 0, 0, "0", 10)
+
+
+    def test_cutoff_must_be_positive_number(self):
+        with self.assertRaises(TypeError):
+            hydrophobic_contrast(self.model, 0, 0, 0, "10")
+        with self.assertRaises(ValueError):
+            hydrophobic_contrast(self.model, 0, 0, 0, -10)
+
+
+    def test_can_get_hydrophobic_contrast(self):
+        self.mock_atsolv.side_effect = [11, -9, 4]
+        contrast = hydrophobic_contrast(self.model, 4, 8, 15, 10)
+        self.model.atoms_in_sphere.assert_called_with(4, 8, 15, 10, het=True)
+        self.mock_solv.assert_called_with(self.model, 4, 8, 15, 10, het=True)
+        for atom in self.atoms[:3]:
+            atom.distance_to.assert_any_call((4, 8, 15))
+            self.mock_atsolv.assert_any_call(atom)
+        self.assertEqual(
+         contrast, ((11 * 49) + (-9 * 25) + (4 * 100)) - (3 * 8 * 58)
+        )
+
+
+    def test_can_handle_zero_atoms(self):
+        self.model.atoms_in_sphere.return_value = []
+        self.assertEqual(hydrophobic_contrast(self.model, 2, 4, 5, 12), 0)
+
+
+    def test_can_filter_out_heteroatoms(self):
+        hydrophobic_contrast(self.model, 2, 4, 5, 12, het=False)
+        self.model.atoms_in_sphere.assert_called_with(2, 4, 5, 12, het=False)
+        self.mock_solv.assert_called_with(self.model, 2, 4, 5, 12, het=False)

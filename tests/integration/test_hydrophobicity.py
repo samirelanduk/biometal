@@ -41,7 +41,6 @@ class SolvationTests(TestCase):
 
 
     def test_solvation_measures(self):
-        atoms_at_start = len(self.model.atoms())
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 0.1), 0)
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 1), -1)
         self.assertEqual(biometal.solvation(self.model, 0, 0, 0, 2), -1)
@@ -55,11 +54,9 @@ class SolvationTests(TestCase):
         self.assertEqual(
          biometal.solvation(self.model, 0, 0, 0, 9, het=False), -146/16
         )
-        self.assertEqual(len(self.model.atoms()), atoms_at_start)
 
 
     def test_partial_charges_measures(self):
-        atoms_at_start = len(self.model.atoms())
         self.assertAlmostEqual(biometal.solvation(
          self.model, 0, 0, 0, 0.1, pc=True
         ), 0, delta=0.005)
@@ -90,4 +87,53 @@ class SolvationTests(TestCase):
         self.assertAlmostEqual(biometal.solvation(
          self.model, 0, 0, 0, 9, pc=True
         ), 7.688794/17, delta=0.005)
-        self.assertEqual(len(self.model.atoms()), atoms_at_start)
+
+
+
+class ContrastTests(TestCase):
+
+    def setUp(self):
+        self.model = Model()
+
+        atom1 = Atom("Fe", 0, 0, 0, name="F1")
+        mol = Molecule(atom1)
+        self.model.add_molecule(mol)
+
+        atom2 = Atom("N", 0.5, 0, 0, name="N")
+        atom3 = Atom("O", 0, 0.5, 0, name="O")
+        res1 = Residue(atom2, atom3, name="VAL")
+        self.model.add_residue(res1)
+
+        atom4 = Atom("C", 1, 0, 0, name="CA")
+        atom5 = Atom("C", 0, 1, 0, name="SB")
+        res2 = Residue(atom4, atom5, name="VAL")
+        self.model.add_residue(res2)
+
+
+    def test_hydrophobic_contrast(self):
+        # C = Σσr^2 - (n * σ r2)
+        self.assertEqual(
+         biometal.hydrophobic_contrast(self.model, 0, 0, 0, 0.1), 0
+        )
+        self.assertEqual(
+         biometal.hydrophobic_contrast(self.model, 0, 0, 0, 0.5),
+         ((0 * 0) + (0.25 * -9) + (0.25 * -9)) - (
+          3 * ((0 + (-9) + (-9)) / 3) * ((0 + 0.25 + 0.25) / 3)
+         )
+        )
+        self.assertEqual(
+         biometal.hydrophobic_contrast(self.model, 0, 0, 0, 0.5, het=False),
+         ((0.25 * -9) + (0.25 * -9)) - (2 * ((-9 + -9) / 2) * ((0.25 + 0.25) / 2))
+        )
+        self.assertEqual(
+         biometal.hydrophobic_contrast(self.model, 0, 0, 0, 1),
+         ((0 * 0) + (0.25 * -9) + (0.25 * -9) + 18 + 18) - (
+          5 * ((0 + (-9) + (-9) + 18 + 18) / 5) * ((0 + 0.25 + 0.25 + 1 + 1) / 5)
+         )
+        )
+        self.assertEqual(
+         biometal.hydrophobic_contrast(self.model, 0, 0, 0, 1, het=False),
+         ((0.25 * -9) + (0.25 * -9) + 18 + 18) - (
+          4 * (((-9) + (-9) + 18 + 18) / 4) * ((0.25 + 0.25 + 1 + 1) / 4)
+         )
+        )
