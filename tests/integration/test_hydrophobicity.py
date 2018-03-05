@@ -54,6 +54,9 @@ class SolvationTests(TestCase):
         self.assertEqual(
          biometal.solvation(self.model, 0, 0, 0, 9, het=False), -146/16
         )
+        self.assertEqual(
+         biometal.solvation(self.model, 0, 0, 0, 9, metal=False), -146/16
+        )
 
 
     def test_partial_charges_measures(self):
@@ -123,6 +126,10 @@ class ContrastTests(TestCase):
         )
         self.assertEqual(
          biometal.hydrophobic_contrast(self.model, 0, 0, 0, 0.5, het=False),
+         ((0.25 * -9) + (0.25 * -9)) - (2 * ((-9 + -9) / 2) * ((0.25 + 0.25) / 2))
+        )
+        self.assertEqual(
+         biometal.hydrophobic_contrast(self.model, 0, 0, 0, 0.5, metal=False),
          ((0.25 * -9) + (0.25 * -9)) - (2 * ((-9 + -9) / 2) * ((0.25 + 0.25) / 2))
         )
         self.assertEqual(

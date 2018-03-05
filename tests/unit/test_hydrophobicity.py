@@ -44,7 +44,9 @@ class SolvationTests(TestCase):
     def test_can_get_solvation(self):
         self.mock_atsolv.side_effect = [11, -9, 4]
         solv = solvation(self.model, 2, 4, 5, 12)
-        self.model.atoms_in_sphere.assert_called_with(2, 4, 5, 12, het=True)
+        self.model.atoms_in_sphere.assert_called_with(
+         2, 4, 5, 12, het=True, metal=True
+        )
         self.mock_atsolv.assert_any_call(self.atoms[0])
         self.mock_atsolv.assert_any_call(self.atoms[1])
         self.mock_atsolv.assert_any_call(self.atoms[2])
@@ -55,7 +57,9 @@ class SolvationTests(TestCase):
     def test_can_get_partial_charges(self):
         self.mock_atcharge.side_effect = [11, -8, 5]
         solv = solvation(self.model, 2, 4, 5, 12, pc=True)
-        self.model.atoms_in_sphere.assert_called_with(2, 4, 5, 12, het=True)
+        self.model.atoms_in_sphere.assert_called_with(
+         2, 4, 5, 12, het=True, metal=True
+        )
         self.mock_atcharge.assert_any_call(self.atoms[0])
         self.mock_atcharge.assert_any_call(self.atoms[1])
         self.mock_atcharge.assert_any_call(self.atoms[2])
@@ -70,7 +74,16 @@ class SolvationTests(TestCase):
 
     def test_can_filter_out_heteroatoms(self):
         solvation(self.model, 2, 4, 5, 12, het=False)
-        self.model.atoms_in_sphere.assert_called_with(2, 4, 5, 12, het=False)
+        self.model.atoms_in_sphere.assert_called_with(
+         2, 4, 5, 12, het=False, metal=True
+        )
+
+
+    def test_can_filter_out_metal(self):
+        solvation(self.model, 2, 4, 5, 12, metal=False)
+        self.model.atoms_in_sphere.assert_called_with(
+         2, 4, 5, 12, het=True, metal=False
+        )
 
 
 
@@ -277,8 +290,12 @@ class HydrophobicContrastTests(TestCase):
     def test_can_get_hydrophobic_contrast(self):
         self.mock_atsolv.side_effect = [11, -9, 4]
         contrast = hydrophobic_contrast(self.model, 4, 8, 15, 10)
-        self.model.atoms_in_sphere.assert_called_with(4, 8, 15, 10, het=True)
-        self.mock_solv.assert_called_with(self.model, 4, 8, 15, 10, het=True)
+        self.model.atoms_in_sphere.assert_called_with(
+         4, 8, 15, 10, het=True, metal=True
+        )
+        self.mock_solv.assert_called_with(
+         self.model, 4, 8, 15, 10, het=True, metal=True
+        )
         for atom in self.atoms[:3]:
             atom.distance_to.assert_any_call((4, 8, 15))
             self.mock_atsolv.assert_any_call(atom)
@@ -294,5 +311,19 @@ class HydrophobicContrastTests(TestCase):
 
     def test_can_filter_out_heteroatoms(self):
         hydrophobic_contrast(self.model, 2, 4, 5, 12, het=False)
-        self.model.atoms_in_sphere.assert_called_with(2, 4, 5, 12, het=False)
-        self.mock_solv.assert_called_with(self.model, 2, 4, 5, 12, het=False)
+        self.model.atoms_in_sphere.assert_called_with(
+         2, 4, 5, 12, het=False, metal=True
+        )
+        self.mock_solv.assert_called_with(
+         self.model, 2, 4, 5, 12, het=False, metal=True
+        )
+
+
+    def test_can_filter_out_metal(self):
+        hydrophobic_contrast(self.model, 2, 4, 5, 12, metal=False)
+        self.model.atoms_in_sphere.assert_called_with(
+         2, 4, 5, 12, het=True, metal=False
+        )
+        self.mock_solv.assert_called_with(
+         self.model, 2, 4, 5, 12, het=True, metal=False
+        )

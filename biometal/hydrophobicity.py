@@ -1,7 +1,7 @@
 from atomium.structures import Model, Atom
 from .charges import partial_charges
 
-def solvation(model, x, y, z, radius, pc=False, het=True):
+def solvation(model, x, y, z, radius, pc=False, het=True, metal=True):
     """Determines the average solvation within a given sphere of an atomium
     model. By default, all atoms within the radius will be considered, but you
     can opt to exlcude heteroatoms (atoms not part of a chain residue) if you so
@@ -16,6 +16,7 @@ def solvation(model, x, y, z, radius, pc=False, het=True):
     atomic solvation parameters (squared).
     :param bool het: If ``False``, only atoms that have a residue will be
     considered.
+    :param bool metal: If ``False``, only non-metal atoms will be considered.
     :raises TypeError: if the model is not an atomium model object.
     :raises TypeError: if the coordinates are not numeric.
     :raises TypeError: if the radius is not numeric.
@@ -31,7 +32,7 @@ def solvation(model, x, y, z, radius, pc=False, het=True):
     if radius < 0:
         raise ValueError("{} is not a valid radius".format(radius))
 
-    sphere = model.atoms_in_sphere(x, y, z, radius, het=het)
+    sphere = model.atoms_in_sphere(x, y, z, radius, het=het, metal=metal)
     solvations = ([atom_partial_charge(atom) ** 2 for atom in sphere]
      if pc else [atom_solvation(atom) for atom in sphere])
     return sum(solvations) / len(sphere) if len(solvations) else 0
@@ -73,7 +74,7 @@ def atom_partial_charge(atom):
     return 0
 
 
-def hydrophobic_contrast(model, x, y, z, radius, het=True):
+def hydrophobic_contrast(model, x, y, z, radius, het=True, metal=True):
     """Determines the hydrophobic contrast within a sphere - a measure of
     how heterogenous the hydrophobicity is within the sphere.
 
@@ -87,8 +88,9 @@ def hydrophobic_contrast(model, x, y, z, radius, het=True):
     :param y: The y-coordinate of the centre of the sphere.
     :param z: The z-coordinate of the centre of the sphere.
     :param radius: The radius of the sphere.
-    :param bool het: If ``False``, only atoms that have a residue will be
+    :param bool het: If ``False``, only atoms that have a residue will be\
     considered.
+    :param bool metal: If ``False``, only non-metal atoms will be considered.
     :raises TypeError: if the model is not an atomium model object.
     :raises TypeError: if the coordinates are not numeric.
     :raises TypeError: if the radius is not numeric.
@@ -103,9 +105,9 @@ def hydrophobic_contrast(model, x, y, z, radius, het=True):
         raise TypeError("{} is not a valid radius".format(radius))
     if radius < 0:
         raise ValueError("{} is not a valid radius".format(radius))
-    sphere = model.atoms_in_sphere(x, y, z, radius, het=het)
+    sphere = model.atoms_in_sphere(x, y, z, radius, het=het, metal=metal)
     if len(sphere) == 0: return 0
-    average_solvation = solvation(model, x, y, z, radius, het=het)
+    average_solvation = solvation(model, x, y, z, radius, het=het, metal=metal)
     sum_, r2 = 0, 0
     for atom in sphere:
         distance = atom.distance_to((x, y, z))
