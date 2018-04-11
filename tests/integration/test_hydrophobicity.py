@@ -144,9 +144,9 @@ class ContrastTests(TestCase):
           4 * (((-9) + (-9) + 18 + 18) / 4) * ((0.25 + 0.25 + 1 + 1) / 4)
          )
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
          biometal.hydrophobic_contrast(self.model, 0, 0, 0, 1, pc=True),
          ((0 * 0) + (0.25 * -0.52 * -0.52) + (0.25 * -0.5 * -0.5) + (0.201 ** 2) + (0.033 ** 2)) - (
           5 * ((0 + ((-0.5) ** 2) + ((-0.52) ** 2) + (0.201 ** 2) + (0.033 ** 2)) / 5) * ((0 + 0.25 + 0.25 + 1 + 1) / 5)
-         )
+         ), delta=0.0000005
         )
