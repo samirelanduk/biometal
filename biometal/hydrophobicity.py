@@ -49,14 +49,14 @@ def atom_solvation(atom):
      "O": {"GLU": ["OE1", "OE2"], "ASP": ["OD1", "OD2"]},
      "N": {"HIS": ["ND1", "NE2"], "ARG": ["NH1", "NH2"]}
     }
-    if atom.element() == "C": return 18
-    if atom.element() == "S": return -5
-    if atom.element() in specials:
-        if atom.charge() != 0:
-            return -37 if atom.element() == "O" else -38
-        if atom.residue() and atom.residue().name() in specials[atom.element()]:
-            if atom.name() in specials[atom.element()][atom.residue().name()]:
-                return -23 if atom.element() == "O" else -23.5
+    if atom.element == "C": return 18
+    if atom.element == "S": return -5
+    if atom.element in specials:
+        if atom.charge != 0:
+            return -37 if atom.element == "O" else -38
+        if atom.residue and atom.residue.name in specials[atom.element]:
+            if atom.name in specials[atom.element][atom.residue.name]:
+                return -23 if atom.element == "O" else -23.5
         return -9
     return 0
 
@@ -67,14 +67,14 @@ def atom_partial_charge(atom):
     :param Atom atom: an atomium atom object.
     :rtype: ``float``"""
 
-    if atom.charge() != 0: return atom.charge()
-    if atom.residue() is not None and atom.residue().name() in partial_charges:
-        if atom.name() in partial_charges[atom.residue().name()]:
-            return partial_charges[atom.residue().name()][atom.name()]
+    if atom.charge != 0: return atom.charge
+    if atom.residue is not None and atom.residue.name in partial_charges:
+        if atom.name in partial_charges[atom.residue.name]:
+            return partial_charges[atom.residue.name][atom.name]
     return 0
 
 
-def hydrophobic_contrast(model, x, y, z, radius, het=True, metal=True):
+def hydrophobic_contrast(model, x, y, z, radius, pc=False, het=True, metal=True):
     """Determines the hydrophobic contrast within a sphere - a measure of
     how heterogenous the hydrophobicity is within the sphere.
 
@@ -107,11 +107,12 @@ def hydrophobic_contrast(model, x, y, z, radius, het=True, metal=True):
         raise ValueError("{} is not a valid radius".format(radius))
     sphere = model.atoms_in_sphere(x, y, z, radius, het=het, metal=metal)
     if len(sphere) == 0: return 0
-    average_solvation = solvation(model, x, y, z, radius, het=het, metal=metal)
+    average_solvation = solvation(model, x, y, z, radius, pc=pc, het=het, metal=metal)
     sum_, r2 = 0, 0
     for atom in sphere:
         distance = atom.distance_to((x, y, z))
-        sum_ += atom_solvation(atom) * (distance ** 2)
+        solv = ((atom_partial_charge(atom)) ** 2) if pc else atom_solvation(atom)
+        sum_ += solv * (distance ** 2)
         r2 += (distance ** 2)
     r2 /= len(sphere)
     return sum_ - (len(sphere) * average_solvation * r2)

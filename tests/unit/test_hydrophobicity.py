@@ -91,10 +91,10 @@ class AtomSolvationTests(TestCase):
 
     def setUp(self):
         self.atom, self.residue = Mock(), Mock()
-        self.atom.charge.return_value = 0
-        self.atom.name.return_value = None
-        self.atom.residue.return_value = self.residue
-        self.residue.name.return_value = "MET"
+        self.atom.charge = 0
+        self.atom.name = None
+        self.atom.residue = self.residue
+        self.residue.name = "MET"
 
 
     def test_default_solvation_is_zero(self):
@@ -102,90 +102,90 @@ class AtomSolvationTests(TestCase):
 
 
     def test_carbon_solvation(self):
-        self.atom.element.return_value = "C"
+        self.atom.element = "C"
         self.assertEqual(atom_solvation(self.atom), 18)
 
 
     def test_oxygen_solvation(self):
-        self.atom.element.return_value = "O"
+        self.atom.element = "O"
         self.assertEqual(atom_solvation(self.atom), -9)
 
 
     def test_nitrogen_solvation(self):
-        self.atom.element.return_value = "N"
+        self.atom.element = "N"
         self.assertEqual(atom_solvation(self.atom), -9)
 
 
     def test_charged_oxygen_solvation(self):
-        self.atom.element.return_value = "O"
-        self.atom.charge.return_value = -2
+        self.atom.element = "O"
+        self.atom.charge = -2
         self.assertEqual(atom_solvation(self.atom), -37)
 
 
     def test_charged_nitrogen_solvation(self):
-        self.atom.element.return_value = "N"
-        self.atom.charge.return_value = 1
+        self.atom.element = "N"
+        self.atom.charge = 1
         self.assertEqual(atom_solvation(self.atom), -38)
 
 
     def test_sulphur_solvation(self):
-        self.atom.element.return_value = "S"
+        self.atom.element = "S"
         self.assertEqual(atom_solvation(self.atom), -5)
 
 
     def test_glutamate_oxygens(self):
-        self.residue.name.return_value = "GLU"
-        self.atom.element.return_value = "O"
+        self.residue.name = "GLU"
+        self.atom.element = "O"
         self.assertEqual(atom_solvation(self.atom), -9)
-        self.atom.name.return_value = "OE1"
+        self.atom.name = "OE1"
         self.assertEqual(atom_solvation(self.atom), -23)
-        self.atom.name.return_value = "OE2"
+        self.atom.name = "OE2"
         self.assertEqual(atom_solvation(self.atom), -23)
-        self.atom.name.return_value = "OE3"
+        self.atom.name = "OE3"
         self.assertEqual(atom_solvation(self.atom), -9)
-        self.atom.residue.return_value = None
+        self.atom.residue = None
         self.assertEqual(atom_solvation(self.atom), -9)
 
 
     def test_aspartate_oxygens(self):
-        self.residue.name.return_value = "ASP"
-        self.atom.element.return_value = "O"
+        self.residue.name = "ASP"
+        self.atom.element = "O"
         self.assertEqual(atom_solvation(self.atom), -9)
-        self.atom.name.return_value = "OD1"
+        self.atom.name = "OD1"
         self.assertEqual(atom_solvation(self.atom), -23)
-        self.atom.name.return_value = "OD2"
+        self.atom.name = "OD2"
         self.assertEqual(atom_solvation(self.atom), -23)
-        self.atom.name.return_value = "OD3"
+        self.atom.name = "OD3"
         self.assertEqual(atom_solvation(self.atom), -9)
-        self.atom.residue.return_value = None
+        self.atom.residue = None
         self.assertEqual(atom_solvation(self.atom), -9)
 
 
     def test_histidine_nitrogens(self):
-        self.residue.name.return_value = "HIS"
-        self.atom.element.return_value = "N"
+        self.residue.name = "HIS"
+        self.atom.element = "N"
         self.assertEqual(atom_solvation(self.atom), -9)
-        self.atom.name.return_value = "ND1"
+        self.atom.name = "ND1"
         self.assertEqual(atom_solvation(self.atom), -23.5)
-        self.atom.name.return_value = "NE2"
+        self.atom.name = "NE2"
         self.assertEqual(atom_solvation(self.atom), -23.5)
-        self.atom.name.return_value = "NF3"
+        self.atom.name = "NF3"
         self.assertEqual(atom_solvation(self.atom), -9)
-        self.atom.residue.return_value = None
+        self.atom.residue = None
         self.assertEqual(atom_solvation(self.atom), -9)
 
 
     def test_arginine_nitrogens(self):
-        self.residue.name.return_value = "ARG"
-        self.atom.element.return_value = "N"
+        self.residue.name = "ARG"
+        self.atom.element = "N"
         self.assertEqual(atom_solvation(self.atom), -9)
-        self.atom.name.return_value = "NH1"
+        self.atom.name = "NH1"
         self.assertEqual(atom_solvation(self.atom), -23.5)
-        self.atom.name.return_value = "NH2"
+        self.atom.name = "NH2"
         self.assertEqual(atom_solvation(self.atom), -23.5)
-        self.atom.name.return_value = "NH3"
+        self.atom.name = "NH3"
         self.assertEqual(atom_solvation(self.atom), -9)
-        self.atom.residue.return_value = None
+        self.atom.residue = None
         self.assertEqual(atom_solvation(self.atom), -9)
 
 
@@ -194,9 +194,9 @@ class AtomicPartialChargesTests(TestCase):
 
     def setUp(self):
         self.atom, self.residue = Mock(), Mock()
-        self.atom.charge.return_value = 0
-        self.atom.name.return_value = None
-        self.atom.residue.return_value = self.residue
+        self.atom.charge = 0
+        self.atom.name = None
+        self.atom.residue = self.residue
         self.patch1 = patch("biometal.hydrophobicity.partial_charges")
         self.mock_charges = self.patch1.start()
         d = {"AAA": {"N": 1, "M": 2}, "BBB": {"X": 3, "Y": 4}}
@@ -213,34 +213,34 @@ class AtomicPartialChargesTests(TestCase):
 
 
     def test_can_return_actual_charge(self):
-        self.atom.charge.return_value = -2
+        self.atom.charge = -2
         self.assertEqual(atom_partial_charge(self.atom), -2)
-        self.atom.charge.return_value = 1.5
+        self.atom.charge = 1.5
         self.assertEqual(atom_partial_charge(self.atom), 1.5)
 
 
     def test_can_return_partial_charge(self):
-        self.residue.name.return_value = "AAA"
-        self.atom.name.return_value = "N"
+        self.residue.name = "AAA"
+        self.atom.name = "N"
         self.assertEqual(atom_partial_charge(self.atom), 1)
-        self.atom.name.return_value = "M"
+        self.atom.name = "M"
         self.assertEqual(atom_partial_charge(self.atom), 2)
-        self.residue.name.return_value = "BBB"
-        self.atom.name.return_value = "X"
+        self.residue.name = "BBB"
+        self.atom.name = "X"
         self.assertEqual(atom_partial_charge(self.atom), 3)
-        self.atom.name.return_value = "Y"
+        self.atom.name = "Y"
         self.assertEqual(atom_partial_charge(self.atom), 4)
 
 
     def test_can_handle_unknown_atoms(self):
-        self.residue.name.return_value = "AAA"
-        self.atom.name.return_value = "N"
+        self.residue.name = "AAA"
+        self.atom.name = "N"
         self.assertEqual(atom_partial_charge(self.atom), 1)
-        self.atom.name.return_value = "P"
+        self.atom.name = "P"
         self.assertEqual(atom_partial_charge(self.atom), 0)
-        self.residue.name.return_value = "CCC"
+        self.residue.name = "CCC"
         self.assertEqual(atom_partial_charge(self.atom), 0)
-        self.atom.residue.return_value = None
+        self.atom.residue = None
         self.assertEqual(atom_partial_charge(self.atom), 0)
 
 
@@ -256,14 +256,17 @@ class HydrophobicContrastTests(TestCase):
         self.model.atoms_in_sphere.return_value = self.atoms[:3]
         self.patch1 = patch("biometal.hydrophobicity.solvation")
         self.patch2 = patch("biometal.hydrophobicity.atom_solvation")
+        self.patch3 = patch("biometal.hydrophobicity.atom_partial_charge")
         self.mock_solv = self.patch1.start()
         self.mock_atsolv = self.patch2.start()
+        self.mock_atcharge = self.patch3.start()
         self.mock_solv.return_value = 8
 
 
     def tearDown(self):
         self.patch1.stop()
         self.patch2.stop()
+        self.patch3.stop()
 
 
     def test_contrast_needs_model(self):
@@ -294,13 +297,30 @@ class HydrophobicContrastTests(TestCase):
          4, 8, 15, 10, het=True, metal=True
         )
         self.mock_solv.assert_called_with(
-         self.model, 4, 8, 15, 10, het=True, metal=True
+         self.model, 4, 8, 15, 10, het=True, metal=True, pc=False
         )
         for atom in self.atoms[:3]:
             atom.distance_to.assert_any_call((4, 8, 15))
             self.mock_atsolv.assert_any_call(atom)
         self.assertEqual(
          contrast, ((11 * 49) + (-9 * 25) + (4 * 100)) - (3 * 8 * 58)
+        )
+
+
+    def test_can_get_hydrophobic_contrast_with_partial_charge(self):
+        self.mock_atcharge.side_effect = [11, -9, 4]
+        contrast = hydrophobic_contrast(self.model, 4, 8, 15, 10, pc=True)
+        self.model.atoms_in_sphere.assert_called_with(
+         4, 8, 15, 10, het=True, metal=True
+        )
+        self.mock_solv.assert_called_with(
+         self.model, 4, 8, 15, 10, het=True, metal=True, pc=True
+        )
+        for atom in self.atoms[:3]:
+            atom.distance_to.assert_any_call((4, 8, 15))
+            self.mock_atcharge.assert_any_call(atom)
+        self.assertEqual(
+         contrast, ((121 * 49) + (81 * 25) + (16 * 100)) - (3 * 8 * 58)
         )
 
 
@@ -315,7 +335,7 @@ class HydrophobicContrastTests(TestCase):
          2, 4, 5, 12, het=False, metal=True
         )
         self.mock_solv.assert_called_with(
-         self.model, 2, 4, 5, 12, het=False, metal=True
+         self.model, 2, 4, 5, 12, het=False, metal=True, pc=False
         )
 
 
@@ -325,5 +345,5 @@ class HydrophobicContrastTests(TestCase):
          2, 4, 5, 12, het=True, metal=False
         )
         self.mock_solv.assert_called_with(
-         self.model, 2, 4, 5, 12, het=True, metal=False
+         self.model, 2, 4, 5, 12, het=True, metal=False, pc=False
         )

@@ -5,7 +5,7 @@ import biometal
 class Tests(TestCase):
 
     def test_templates(self):
-        site = atomium.fetch("1TON").model().molecule(name="ZN").site()
+        site = atomium.fetch("1TON").model.molecule(name="ZN").site()
 
         template = biometal.create_site_template(site)
         self.assertEqual(len(template.atoms()), 6)
