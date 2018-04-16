@@ -1,3 +1,5 @@
+"""Contains functions for examining hydrophobicity."""
+
 from atomium.structures import Model, Atom
 from .charges import partial_charges
 
@@ -14,7 +16,7 @@ def solvation(model, x, y, z, radius, pc=False, het=True, metal=True):
     :param radius: The radius of the sphere.
     :param bool pc: If ``True``, atomic partial charges will be used instead of\
     atomic solvation parameters (squared).
-    :param bool het: If ``False``, only atoms that have a residue will be
+    :param bool het: If ``False``, only atoms that have a residue will be\
     considered.
     :param bool metal: If ``False``, only non-metal atoms will be considered.
     :raises TypeError: if the model is not an atomium model object.
