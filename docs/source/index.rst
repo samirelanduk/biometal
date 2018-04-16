@@ -22,4 +22,5 @@ Table of Contents
 
     installing
     api
+    contributing
     changelog
